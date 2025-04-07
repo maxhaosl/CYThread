@@ -1,0 +1,98 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Inc">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Src">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Inc\CYThread">
+      <UniqueIdentifier>{f0563c56-d714-4d8e-85a4-e26572a88002}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Thread">
+      <UniqueIdentifier>{dedb37a1-48ca-4b1b-bdfc-74c3824543a8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\ThreadPool">
+      <UniqueIdentifier>{cdeb69cf-51f8-4834-a1a1-c1ec14f9b883}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\System">
+      <UniqueIdentifier>{1134ad43-804b-41e5-a74f-3a1c20d23b7e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Platform">
+      <UniqueIdentifier>{ef3c95c2-2faf-4e9f-af9d-764d49743128}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Foundation">
+      <UniqueIdentifier>{3ae85344-e092-41a2-8c99-f3d2886ed431}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\Src\CYThreadPCH.cpp">
+      <Filter>Src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Src\CYThreadFactory.cpp">
+      <Filter>Src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Src\CYThread.cpp">
+      <Filter>Src\Thread</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Src\CYThreadPool.cpp">
+      <Filter>Src\ThreadPool</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Src\CYThreadPoolProperties.cpp">
+      <Filter>Src\ThreadPool</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Src\CYThreadProperties.cpp">
+      <Filter>Src\Thread</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Src\CYThreadWindows.cpp">
+      <Filter>Src\Thread</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Src\CYSystemDesc.cpp">
+      <Filter>Src\System</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Src\CYThreadFoundation.cpp">
+      <Filter>Src\Foundation</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\Src\CYThreadPCH.hpp">
+      <Filter>Src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Inc\CYThread\ICYThread.hpp">
+      <Filter>Inc\CYThread</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Inc\CYThread\CYThreadDefine.hpp">
+      <Filter>Inc\CYThread</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Inc\CYThread\CYThreadFactory.hpp">
+      <Filter>Inc\CYThread</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Src\CYThread.hpp">
+      <Filter>Src\Thread</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Src\CYThreadPool.hpp">
+      <Filter>Src\ThreadPool</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Src\CYThreadPoolProperties.hpp">
+      <Filter>Src\ThreadPool</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Src\CYThreadProperties.hpp">
+      <Filter>Src\Thread</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Src\CYThreadWindows.hpp">
+      <Filter>Src\Thread</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Src\CYSystemDesc.hpp">
+      <Filter>Src\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Src\CYPlatformSpecifier.hpp">
+      <Filter>Src\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Src\CYThreadFoundation.hpp">
+      <Filter>Src\Foundation</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
