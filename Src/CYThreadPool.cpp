@@ -17,7 +17,7 @@ CYThreadPool::CYThreadPool()
 
 CYThreadPool::~CYThreadPool()
 {
-    Shutdown();
+    (void)Shutdown();
 }
 
 /**

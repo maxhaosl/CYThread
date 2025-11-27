@@ -9,7 +9,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 BUILD_ROOT="${ROOT_DIR}/Build/out/linux"
 BIN_ROOT="${ROOT_DIR}/Bin/Linux"
-GENERATOR="${CMAKE_GENERATOR:-Ninja}"
+GENERATOR="${CMAKE_GENERATOR:-Unix Makefiles}"
 ARCHS=("x86_64" "aarch64")
 CONFIGS=("Debug" "Release")
 LIB_TYPES=("shared" "static")
@@ -40,13 +40,20 @@ build_variant() {
     local build_dir="${BUILD_ROOT}/${arch}/${lib_type}/${config}"
     local artifact_dir="${BIN_ROOT}/${arch}/${lib_type}/${config}"
 
+    local -a compiler_args=()
+    if [[ -z "${toolchain}" ]]; then
+        compiler_args+=("-DCMAKE_C_COMPILER=clang-17")
+        compiler_args+=("-DCMAKE_CXX_COMPILER=clang++-17")
+    fi
+
     log "Configuring ${arch} ${lib_type} ${config}"
     cmake -S "${ROOT_DIR}" -B "${build_dir}" \
         -G "${GENERATOR}" \
         -DCMAKE_BUILD_TYPE="${config}" \
         -DCYTHREAD_BUILD_SHARED="${shared_flag}" \
         -DCMAKE_SYSTEM_PROCESSOR="${arch}" \
-        ${toolchain:+-DCMAKE_TOOLCHAIN_FILE="${toolchain}"}
+        ${toolchain:+-DCMAKE_TOOLCHAIN_FILE="${toolchain}"} \
+        "${compiler_args[@]}"
 
     log "Building ${arch} ${lib_type} ${config}"
     cmake --build "${build_dir}"
