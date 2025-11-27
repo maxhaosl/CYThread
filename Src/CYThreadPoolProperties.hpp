@@ -40,28 +40,6 @@
   * LICENSE:  Expat/MIT License, See Copyright Notice at the begin of this file.
   */
 
-#ifndef __CY_THREAD_FACTORY_HPP__
-#define __CY_THREAD_FACTORY_HPP__
-
-#include "CYThread/ICYThread.hpp"
-
-CYTHRAD_NAMESPACE_BEGIN
-
-class CYTHREAD_API CYThreadFactory
-{
-public:
-    CYThreadFactory();
-    virtual ~CYThreadFactory();
-
-public:
-    ICYThreadPool* CreateThreadPool();
-    void ReleaseThreadPool(ICYThreadPool* pThreadPool);
-};
-
-CYTHRAD_NAMESPACE_END
-
-#endif // __CY_THREAD_FACTORY_HPP__
-
 #ifndef __CY_THREAD_POOL_PROPERTIES_HPP__
 #define __CY_THREAD_POOL_PROPERTIES_HPP__
 
@@ -80,29 +58,65 @@ public:
     CYThreadPoolProperties();
 
 public:
-    //Function member to set the maximum allowable threads
+    /**
+     * Function member to set the maximum allowable threads
+     * @param nMaxThreads: maximum number of threads that the pool can allocate
+     * @return void
+     */
     void SetMaxThreads(int nMaxThreads);
-    //Function member to set the maximum allowable number of tasks
+
+    /**
+     * Function member to set the maximum allowable number of tasks
+     * @param nMaxTasks: maximum number of tasks that the pool can allocate
+     * @return void
+     */
     void SetMaxTasks(int nMaxTasks);
-    //Function member to set the objTask pool lock
+
+    /**
+     * Function member to set the objTask pool lock
+     * @param nStatus: the lock status, 0 means unlock, 1 means lock
+     * @return void
+     */
     void SetTaskPoolLock(int32_t nStatus);
-    //Get the objTask pool lock
+
+    /**
+     * Get the objTask pool lock
+     * @return the lock status, 0 means unlock, 1 means lock
+     * @note This function is not thread-safe, please use it with caution.
+     */
     int32_t GetTaskPoolLock(void);
-    //Get the maximum allowed threads
+
+    /**
+     * Get the maximum allowed threads
+     * @return the maximum allowed threads
+     */
     int GetMaxThreadCount(void)  const noexcept
     {
         return m_nMaxThreads;
     }
+
+    /**
+     * Get the maximum allowed tasks
+     * @return the maximum allowed tasks
+     */
     int GetMaxTasks()
     {
         return m_nMaxTasks;
     }
 public:
-    //Maximum number of threads that the pool can allocate
+    /**
+     * Maximum number of threads that the pool can allocate.
+     */
     int m_nMaxThreads;
-    //Maximum number of tasks that the pool can allocate
+
+    /**
+     * Maximum number of tasks that the pool can allocate.
+     */
     int m_nMaxTasks;
-    //Block any new tasks from being submitted
+
+    /**
+     * Block any new tasks from being submitted.
+     */
     int32_t m_nBlockTask;
 };
 

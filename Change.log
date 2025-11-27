@@ -1,0 +1,14 @@
+## 2025-11-27
+- Added automatic stop_token shim selection for Android and guarded platform macros to avoid redefinition warnings.
+- Updated `build_windows.bat` to auto-load Visual Studio environments and cover all MD/MT + shared/static variants with outputs under `Bin/Windows`.
+- Consolidated Linux outputs under `Bin/Linux` and simplified artifact naming.
+- Enhanced `build_ios.sh` and `build_macos.sh` to generate per-arch builds plus universal libraries (device/simulator for iOS, x86_64/arm64 for macOS); iOS script now lipo’s results at the end.
+- Reran Android, iOS, and macOS build scripts to regenerate every Debug/Release static/shared library.
+
+## 2025-11-26
+- Implemented `CYThreadFoundation::GetTaskExecutionProps` defaults (soft affinity, normal priority, round-robin core) and wired `Distribute()` into the pool.
+- Fixed task dispatching by introducing a dedicated distribution thread inside `CYThreadPool` and ensuring missed/new queues drain into available workers.
+- Expanded `CYThreadTask` with execution properties, tightened `CYThread` stop-token support, and added the `detail::stop_token` compatibility layer used by `CYJThread`.
+- Created `Tests/SimpleTest.cpp`, moved test samples into `Tests/`, and updated build/test scripts; compiled and ran the suite.
+- Added Android SDK/NDK auto-detection plus universal macOS build pipeline (per-arch builds followed by `lipo` combines).
+

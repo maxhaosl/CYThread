@@ -10,6 +10,11 @@ CYThreadProperties::CYThreadProperties()
 {
 }
 
+/**
+ * Function member to populate the threads properties.
+ * @param platformId: the platform id of the current system.
+ * @return void
+ */
 void CYThreadProperties::CreateProperties(const CYPlatformId& ePlatformId)
 {
     //Generate the threads properties
@@ -24,6 +29,11 @@ void CYThreadProperties::CreateProperties(const CYPlatformId& ePlatformId)
     }
 }
 
+/**
+ * Function member to set the stack size of a particular thread.
+ * @param stackSize: the stack size of a particular thread.
+ * @return void
+ */
 void CYThreadProperties::SetStackSize(int nStackSize)
 {
     m_nStackSize = nStackSize;

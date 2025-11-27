@@ -23,6 +23,9 @@ CYThreadFoundation::~CYThreadFoundation()
     Shutdown();
 }
 
+/**
+ * Clean up all allocations.
+ */
 void CYThreadFoundation::Shutdown() noexcept
 {
     if (m_ptrThreadPool)
@@ -33,7 +36,10 @@ void CYThreadFoundation::Shutdown() noexcept
 }
 
 #ifdef _DEBUG
-//mpr: enabled only for debugging!
+/**
+ * Get thread pool instance (debug only).
+ * @return The thread pool instance.
+ */
 CYThreadPool& CYThreadFoundation::GetTPInstance() noexcept
 {
     if (!m_ptrThreadPool)
@@ -44,11 +50,19 @@ CYThreadPool& CYThreadFoundation::GetTPInstance() noexcept
 }
 #endif
 
+/**
+ * Check if thread pool is empty.
+ * @return true if thread pool is empty, otherwise false.
+ */
 bool CYThreadFoundation::IsEmpty() const noexcept
 {
     return(m_ptrThreadPool ? m_ptrThreadPool->IsPoolEmpty() : true);
 }
 
+/**
+ * Check if any threads are executing tasks.
+ * @return true if any threads are executing tasks, otherwise false.
+ */
 bool CYThreadFoundation::AreAnyThreadsWorking() const noexcept
 {
     if (!m_ptrThreadPool) return false;
@@ -60,6 +74,10 @@ bool CYThreadFoundation::AreAnyThreadsWorking() const noexcept
     return (nAvailable + nPauseThreadCount) != nMaxThreadCount;
 }
 
+/**
+ * Terminate all working threads.
+ * @note This function will block until all threads are terminated.
+ */
 void CYThreadFoundation::TerminateAllWorkingThreads() noexcept
 {
     if (m_ptrThreadPool)
@@ -68,6 +86,10 @@ void CYThreadFoundation::TerminateAllWorkingThreads() noexcept
     }
 }
 
+/**
+ * Suspend all executing threads.
+ * @note This function will block until all threads are suspended.
+ */
 void CYThreadFoundation::SuspendAllWorkingThreads() noexcept
 {
     if (m_ptrThreadPool)
@@ -76,6 +98,10 @@ void CYThreadFoundation::SuspendAllWorkingThreads() noexcept
     }
 }
 
+/**
+ * Process submitted tasks.
+ * @note This function will be called by CYThread periodically.
+ */
 void CYThreadFoundation::Distribute() noexcept
 {
     if (m_ptrThreadPool)
@@ -84,12 +110,44 @@ void CYThreadFoundation::Distribute() noexcept
     }
 }
 
+/**
+ * Submit a objTask to the pool.
+ * @param pInvokingObject The task to be submitted.
+ * @return true if the task is submitted successfully, otherwise false.
+ */
 bool CYThreadFoundation::SubmitTask(ICYIThreadableObject* pInvokingObject) noexcept
 {
     if (!m_ptrThreadPool || !pInvokingObject) return false;
     return(m_ptrThreadPool->SubmitTask(pInvokingObject));
 }
 
+/**
+ * Populate default execution properties that the caller can tweak before submitting
+ * a task to the pool. The goal is to give each task a balanced preferred core while
+ * keeping the defaults cross-platform safe.
+ */
+void CYThreadFoundation::GetTaskExecutionProps(CYThreadExecutionProps& objTep) const noexcept
+{
+    objTep.SetTasksProcessAffinity(CYProcessorAffinity::AFFINITY_PROCESSOR_SOFT);
+    objTep.SetTasksPriority(CYThreadPriority::PRIORITY_THREAD_NORMAL);
+#undef max
+    const unsigned int hwConcurrency = std::max(1u, std::thread::hardware_concurrency());
+
+    int preferredCore = 0;
+    if (m_ptrThreadPool && hwConcurrency > 0)
+    {
+        const int activeThreads = m_ptrThreadPool->GetMaxThreadCount() - m_ptrThreadPool->GetThreadAvailableCount();
+        preferredCore = activeThreads % static_cast<int>(hwConcurrency);
+    }
+
+    objTep.SetTasksCore(preferredCore);
+    objTep.CreateTasksProcessorAffinity();
+}
+
+/**
+ * Create thread pool.
+ * @param iMaxThread The maximum number of threads in the pool.
+ */
 void CYThreadFoundation::CreateThreadPool(int iMaxThread) noexcept
 {
     if (!m_ptrThreadPool)
@@ -100,12 +158,20 @@ void CYThreadFoundation::CreateThreadPool(int iMaxThread) noexcept
     }
 }
 
+/**
+ * Get nAvailable thread.
+ * @param bRemove Remove thread from list if true.
+ */
 CYThread* CYThreadFoundation::GetAvailThread(bool bRemove) const noexcept
 {
     return m_ptrThreadPool ? m_ptrThreadPool->GetAvailThread(bRemove) : nullptr;
 }
 
-// SuspendAllWorkingThreads() ϳ ÷׸ CYThreadStatus::STATUS_THREAD_PAUSING
+/**
+* Pause all working threads.
+* @note This function will block until all threads are paused.
+* @note SuspendAllWorkingThreads() ϳ ÷׸ CYThreadStatus::STATUS_THREAD_PAUSING.
+*/
 void CYThreadFoundation::PauseAllWorkingThreads() noexcept
 {
     if (m_ptrThreadPool)
@@ -114,6 +180,11 @@ void CYThreadFoundation::PauseAllWorkingThreads() noexcept
     }
 }
 
+/**
+ * Pause specific working thread.
+ * @param pInvokingObject The thread to be paused.
+ * @note This function will block until the specified thread is paused.
+ */
 void CYThreadFoundation::PauseWorkingThread(ICYIThreadableObject* pInvokingObject) noexcept
 {
     if (m_ptrThreadPool && pInvokingObject)
@@ -122,7 +193,10 @@ void CYThreadFoundation::PauseWorkingThread(ICYIThreadableObject* pInvokingObjec
     }
 }
 
-//
+/**
+ * Resume all working threads.
+ * @note This function will block until all threads are resumed.
+ */
 void CYThreadFoundation::ResumeAllWorkingThreads() noexcept
 {
     if (m_ptrThreadPool)
@@ -131,6 +205,11 @@ void CYThreadFoundation::ResumeAllWorkingThreads() noexcept
     }
 }
 
+/**
+ * Resume specific working thread.
+ * @param pInvokingObject The thread to be resumed.
+ * @note This function will block until the specified thread is resumed.
+ */
 void CYThreadFoundation::ResumeWorkingThread(ICYIThreadableObject* pInvokingObject) noexcept
 {
     if (m_ptrThreadPool && pInvokingObject)
@@ -139,13 +218,21 @@ void CYThreadFoundation::ResumeWorkingThread(ICYIThreadableObject* pInvokingObje
     }
 }
 
+/**
+ * Get status of specific working thread.
+ * @param pInvokingObject The thread to be queried.
+ * @return The status of the specified thread.
+ */
 CYThreadStatus CYThreadFoundation::GetWorkingThreadStatus(ICYIThreadableObject* pInvokingObject) const noexcept
 {
-    return m_ptrThreadPool && pInvokingObject ?
-        m_ptrThreadPool->GetWorkingThreadStatus(pInvokingObject) :
-        CYThreadStatus::STATUS_THREAD_NONE;
+    return m_ptrThreadPool && pInvokingObject ? m_ptrThreadPool->GetWorkingThreadStatus(pInvokingObject) : CYThreadStatus::STATUS_THREAD_NONE;
 }
 
+/**
+ * Terminate specific working thread.
+ * @param pInvokingObject The thread to be terminated.
+ * @note This function will block until the specified thread is terminated.
+ */
 void CYThreadFoundation::TerminateWorkingThread(ICYIThreadableObject* pInvokingObject) noexcept
 {
     if (m_ptrThreadPool && pInvokingObject)
@@ -154,6 +241,10 @@ void CYThreadFoundation::TerminateWorkingThread(ICYIThreadableObject* pInvokingO
     }
 }
 
+/**
+ * Wait for thread completion.
+ * @param pInvokingObject The thread to be waited.
+ */
 uint32_t CYThreadFoundation::WaitForSingleObject(ICYIThreadableObject* pInvokingObject, uint32_t dwMiliseconds) const noexcept
 {
     return m_ptrThreadPool ? m_ptrThreadPool->WaitForSingleObject(pInvokingObject, dwMiliseconds) : 0;

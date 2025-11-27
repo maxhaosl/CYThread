@@ -40,28 +40,6 @@
   * LICENSE:  Expat/MIT License, See Copyright Notice at the begin of this file.
   */
 
-#ifndef __CY_THREAD_FACTORY_HPP__
-#define __CY_THREAD_FACTORY_HPP__
-
-#include "CYThread/ICYThread.hpp"
-
-CYTHRAD_NAMESPACE_BEGIN
-
-class CYTHREAD_API CYThreadFactory
-{
-public:
-    CYThreadFactory();
-    virtual ~CYThreadFactory();
-
-public:
-    ICYThreadPool* CreateThreadPool();
-    void ReleaseThreadPool(ICYThreadPool* pThreadPool);
-};
-
-CYTHRAD_NAMESPACE_END
-
-#endif // __CY_THREAD_FACTORY_HPP__
-
 #ifndef __CY_SYSTEM_DESC_HPP__
 #define __CY_SYSTEM_DESC_HPP__
 
@@ -75,7 +53,16 @@ CYTHRAD_NAMESPACE_END
 #include <windows.h>
 #elif defined(__linux__)
 #include <sys/sysinfo.h>
+#if defined(__i386__) || defined(__x86_64__)
 #include <cpuid.h>
+#define CYTHREAD_HAS_LINUX_CPUID 1
+#else
+#define CYTHREAD_HAS_LINUX_CPUID 0
+#endif
+#endif
+
+#ifndef CYTHREAD_HAS_LINUX_CPUID
+#define CYTHREAD_HAS_LINUX_CPUID 0
 #endif
 
 #include "CYThread/CYThreadDefine.hpp"

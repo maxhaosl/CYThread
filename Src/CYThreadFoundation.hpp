@@ -40,28 +40,6 @@
   * LICENSE:  Expat/MIT License, See Copyright Notice at the begin of this file.
   */
 
-#ifndef __CY_THREAD_FACTORY_HPP__
-#define __CY_THREAD_FACTORY_HPP__
-
-#include "CYThread/ICYThread.hpp"
-
-CYTHRAD_NAMESPACE_BEGIN
-
-class CYTHREAD_API CYThreadFactory
-{
-public:
-    CYThreadFactory();
-    virtual ~CYThreadFactory();
-
-public:
-    ICYThreadPool* CreateThreadPool();
-    void ReleaseThreadPool(ICYThreadPool* pThreadPool);
-};
-
-CYTHRAD_NAMESPACE_END
-
-#endif // __CY_THREAD_FACTORY_HPP__
-
 #ifndef __CY_THREAD_FOUNDATION_HPP__
 #define __CY_THREAD_FOUNDATION_HPP__
 
@@ -88,69 +66,132 @@ public:
     CYThreadFoundation& operator=(CYThreadFoundation&&) noexcept = default;
 
 public:
-    // Check if thread pool is empty
+    /**
+     * Check if thread pool is empty.
+     * @return true if thread pool is empty, otherwise false.
+     */
     [[nodiscard]] bool IsEmpty() const noexcept;
 
-    // Check if any threads are executing tasks
+    /**
+     * Check if any threads are executing tasks.
+     * @return true if any threads are executing tasks, otherwise false.
+     */
     [[nodiscard]] bool AreAnyThreadsWorking() const noexcept;
 
-    // Terminate all working threads
+    /**
+     * Terminate all working threads.
+     * @note This function will block until all threads are terminated.
+     */
     void TerminateAllWorkingThreads() noexcept;
 
-    // Suspend all executing threads
+    /**
+     * Suspend all executing threads.
+     * @note This function will block until all threads are suspended.
+     */
     void SuspendAllWorkingThreads() noexcept;
 
-    // Pause all working threads
+    /**
+     * Pause all working threads.
+     * @note This function will block until all threads are paused.
+     */
     void PauseAllWorkingThreads() noexcept;
 
-    // Pause specific working thread
+    /**
+     * Pause specific working thread.
+     * @param pInvokingObject The thread to be paused.
+     * @note This function will block until the specified thread is paused.
+     */
     void PauseWorkingThread(ICYIThreadableObject* pInvokingObject) noexcept;
 
-    // Resume all working threads
+    /**
+     * Resume all working threads.
+     * @note This function will block until all threads are resumed.
+     */
     void ResumeAllWorkingThreads() noexcept;
 
-    // Resume specific working thread
+    /**
+     * Resume specific working thread.
+     * @param pInvokingObject The thread to be resumed.
+     * @note This function will block until the specified thread is resumed.
+     */
     void ResumeWorkingThread(ICYIThreadableObject* pInvokingObject) noexcept;
 
-    // Terminate specific working thread
+    /**
+     * Terminate specific working thread.
+     * @param pInvokingObject The thread to be terminated.
+     * @note This function will block until the specified thread is terminated.
+     */
     void TerminateWorkingThread(ICYIThreadableObject* pInvokingObject) noexcept;
 
-    // Get status of specific working thread
+    /**
+     * Get status of specific working thread.
+     * @param pInvokingObject The thread to be queried.
+     * @return The status of the specified thread.
+     */
     [[nodiscard]] CYThreadStatus GetWorkingThreadStatus(ICYIThreadableObject* pInvokingObject) const noexcept;
 
-    // Get execution properties
+    /**
+     * Get execution properties.
+     * @param objTep The execution properties to be queried.
+     * @note This function will block until the specified thread is resumed.
+     */
     void GetTaskExecutionProps(CYThreadExecutionProps& objTep) const noexcept;
 
-    // Submit a objTask to the pool
+    /**
+     * Submit a objTask to the pool.
+     * @param pInvokingObject The task to be submitted.
+     * @return true if the task is submitted successfully, otherwise false.
+     */
     bool SubmitTask(ICYIThreadableObject* pInvokingObject) noexcept;
 
-    // Process submitted tasks
+    /**
+     * Process submitted tasks.
+     * @note This function will be called by CYThread periodically.
+     */
     void Distribute() noexcept;
 
-    // Create thread pool
+    /**
+     * Create thread pool.
+     * @param iMaxThread The maximum number of threads in the pool.
+     */
     void CreateThreadPool(int iMaxThread = 10) noexcept;
 
-    // Get nAvailable thread
+    /**
+     * Get nAvailable thread.
+     * @param bRemove Remove thread from list if true.
+     */
     [[nodiscard]] CYThread* GetAvailThread(bool bRemove = false) const noexcept;
 
 #ifdef _DEBUG
-    // Get thread pool instance (debug only)
+    /**
+     * Get thread pool instance (debug only).
+     * @return The thread pool instance.
+     */
     [[nodiscard]] CYThreadPool& GetTPInstance() noexcept;
 #endif
 
-    // Wait for thread completion
+    /**
+     * Wait for thread completion.
+     * @param pInvokingObject The thread to be waited.
+     */
     [[nodiscard]] uint32_t WaitForSingleObject(ICYIThreadableObject* pInvokingObject, uint32_t dwMiliseconds) const noexcept;
 
 private:
-    // Thread pool singleton
+    /**
+     * Clean up all allocations.
+     */
+    void Shutdown() noexcept;
+
+private:
+    /**
+     * Thread pool singleton.
+     */
     static std::unique_ptr<CYThreadPool> m_ptrThreadPool;
 
-    // Platform specifier
+    /**
+     * Platform specifier.
+     */
     CYPlatformSpecifier m_objPlatformSpecifier;
-
-protected:
-    // Clean up all allocations
-    void Shutdown() noexcept;
 };
 
 CYTHRAD_NAMESPACE_END

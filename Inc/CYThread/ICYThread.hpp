@@ -62,7 +62,7 @@ CYTHRAD_NAMESPACE_BEGIN
 /**
  * Thread Execution Properties.
  */
-    class CYTHREAD_API CYThreadExecutionProps
+class CYTHREAD_API CYThreadExecutionProps
 {
 public:
     CYThreadExecutionProps()
@@ -157,7 +157,7 @@ private:
     /**
      * Local method to determine processor affinity mask based on desired core.
      */
-    [[nodiscard]] uint32_t		GetProcessorAffinity(int nDesiredCore) const noexcept
+    [[nodiscard]] uint32_t GetProcessorAffinity(int nDesiredCore) const noexcept
     {
         if (nDesiredCore < 0)
         {

@@ -52,17 +52,29 @@
 #define CYTHRAD_NAMESPACE_USE			using namespace	cry
 
 #if defined(__MINGW32__)
-#    define CYTHREAD_MINGW_OS
+#    ifndef CYTHREAD_MINGW_OS
+#        define CYTHREAD_MINGW_OS
+#    endif
 #elif defined(_WIN32)
-#    define CYTHREAD_WIN_OS
+#    ifndef CYTHREAD_WIN_OS
+#        define CYTHREAD_WIN_OS
+#    endif
 #elif defined(unix) || defined(__unix__) || defined(__unix)
-#    define CYTHREAD_UNIX_OS
+#    ifndef CYTHREAD_UNIX_OS
+#        define CYTHREAD_UNIX_OS
+#    endif
 #elif defined(__APPLE__) || defined(__MACH__)
-#    define CYTHREAD_MAC_OS
+#    ifndef CYTHREAD_MAC_OS
+#        define CYTHREAD_MAC_OS
+#    endif
 #elif defined(__FreeBSD__)
-#    define CYTHREAD_FREE_BSD_OS
+#    ifndef CYTHREAD_FREE_BSD_OS
+#        define CYTHREAD_FREE_BSD_OS
+#    endif
 #elif defined(__ANDROID__)
-#    define CYTHREAD_ANDROID_OS
+#    ifndef CYTHREAD_ANDROID_OS
+#        define CYTHREAD_ANDROID_OS
+#    endif
 #endif
 
 #if defined(__clang__)
@@ -96,9 +108,14 @@ CYTHRAD_NAMESPACE_BEGIN
 /**
  * Platform ID.
  */
-    enum CYPlatformId
+enum CYPlatformId
 {
     CY_PLATFORM_WINDOWS = 0,
+    CY_PLATFROM_LINUX,
+    CY_PLATFORM_MAC,
+    CY_PLATFORM_IOS,
+    CY_PLATFORM_ANDROID,
+    CY_PLATFORM_FREE_BSD,
     CY_PLATFORM_NONE = 1,
 };
 
@@ -107,11 +124,11 @@ CYTHRAD_NAMESPACE_BEGIN
  */
 enum class CYThreadStatus : uint8_t
 {
-    STATUS_THREAD_NOT_EXECUTING = 0,		// Not executing, ready to execute
-    STATUS_THREAD_EXECUTING = 1,		// Currently executing
-    STATUS_THREAD_PURGING = 2,		// STATUS_THREAD_PURGING state
-    STATUS_THREAD_PAUSING = 3,		// STATUS_THREAD_PAUSING state
-    STATUS_THREAD_NONE = 4,
+    STATUS_THREAD_NOT_EXECUTING     = 0,		// Not executing, ready to execute
+    STATUS_THREAD_EXECUTING         = 1,		// Currently executing
+    STATUS_THREAD_PURGING           = 2,		// STATUS_THREAD_PURGING state
+    STATUS_THREAD_PAUSING           = 3,		// STATUS_THREAD_PAUSING state
+    STATUS_THREAD_NONE              = 4,
 };
 
 /**
@@ -119,11 +136,11 @@ enum class CYThreadStatus : uint8_t
  */
 enum class CYThreadPriority : uint8_t
 {
-    PRIORITY_THREAD_LOW = 0,		//PRIORITY_THREAD_LOW
-    PRIORITY_THREAD_NORMAL = 1,		//PRIORITY_THREAD_NORMAL
-    PRIORITY_THREAD_HIGH = 2,		//Above PRIORITY_THREAD_NORMAL
-    PRIORITY_THREAD_CRITICAL = 3,		//PRIORITY_THREAD_HIGH
-    PRIORITY_THREAD_TIME_CRITICAL = 4,		//Time PRIORITY_THREAD_CRITICAL
+    PRIORITY_THREAD_LOW             = 0,		//PRIORITY_THREAD_LOW
+    PRIORITY_THREAD_NORMAL          = 1,		//PRIORITY_THREAD_NORMAL
+    PRIORITY_THREAD_HIGH            = 2,		//Above PRIORITY_THREAD_NORMAL
+    PRIORITY_THREAD_CRITICAL        = 3,		//PRIORITY_THREAD_HIGH
+    PRIORITY_THREAD_TIME_CRITICAL   = 4,		//Time PRIORITY_THREAD_CRITICAL
 };
 
 /**
@@ -131,7 +148,7 @@ enum class CYThreadPriority : uint8_t
  */
 enum class CYProcessorAffinity : uint8_t
 {
-    AFFINITY_PROCESSOR_SOFT = 0,
+    AFFINITY_PROCESSOR_SOFT         = 0,
     AFFINITY_PROCESSOR_HARD,
     AFFINITY_PROCESSOR_UNDEFINED,
 };
@@ -139,13 +156,21 @@ enum class CYProcessorAffinity : uint8_t
 /**
  * Thread Task Struct.
  */
-struct CYThreadTask
+struct CYTHREAD_API CYThreadTask
 {
-    //Threads execution callback
+    /**
+     * Threads execution callback.
+     */
     std::function<void(void*, bool)> funTaskToExecute;
-    //Threads execution arguments
+    
+    /**
+     * Threads execution arguments.
+     */
     void* pArgList{ nullptr };
-    //Reserved deletion flag
+    
+    /**
+     * Reserved deletion flag.
+     */
     bool bDelete{ false };
 };
 

@@ -20,17 +20,26 @@ CYThread::~CYThread()
     }
 }
 
+/**
+ * Accessor to determine if a thread is nAvailable for work?
+ * @param status - The new status of the thread.
+ */
 void CYThread::SetThreadAvail(CYThreadStatus Available)
 {
     m_eThreadAvail.store(Available, std::memory_order_release);
 }
 
+/**
+ * Thread creation method.
+ * @param objProps - The properties of the thread to be created.
+ * @return True if the thread was created successfully, false otherwise.
+ */
 bool CYThread::CreateThread(const CYThreadProperties& objProps)
 {
     try
     {
-        m_ptrThread = std::make_unique<std::jthread>([this](std::stop_token stoken) {
-            ThreadFunction();
+        m_ptrThread = std::make_unique<CYJThread>([this]() {
+            ExecuteThread();
             });
         return true;
     }
@@ -40,9 +49,44 @@ bool CYThread::CreateThread(const CYThreadProperties& objProps)
     }
 }
 
-void CYThread::ThreadFunction()
+/**
+ * Alter the threads properties, such as its stack size, id etc..
+ * @param objAttributes - The properties of the thread to be changed.
+ */
+void CYThread::ChangeThreadProperties(const CYThreadTask& objAttributes)
 {
-    while (true)
+    // Implementation depends on what properties need to be changed
+    // Now handled through thread-local storage or execution context
+}
+
+/**
+ * Alter the threads properties, such as its stack size, id etc.. and then execute it.
+ * @param objAttributes - The properties of the thread to be changed.
+ */
+void CYThread::ChangeThreadPropertiesandResume(const CYThreadTask& objAttributes)
+{
+    m_nChangedThreadsTask.fetch_add(1, std::memory_order_release);
+    //m_objThreadsTask = objAttributes;
+    m_objNextThreadsTask = objAttributes;
+    SetThreadAvail(CYThreadStatus::STATUS_THREAD_EXECUTING);
+    ResumeThread();
+}
+
+void CYThread::ChangeThreadPropertiesandResume(ICYIThreadableObject* pAttributes)
+{
+    m_nChangedThreadsObject.fetch_add(1, std::memory_order_release);
+    m_pNextThreadsObject = pAttributes;
+    SetThreadAvail(CYThreadStatus::STATUS_THREAD_EXECUTING);
+    ResumeThread();
+}
+
+/**
+ * Controls how a thread gets executed.
+ * @return The return value of the thread function.
+ */
+uint32_t CYThread::ExecuteThread() noexcept
+{
+    while (m_ptrThread && !m_ptrThread->get_stop_token().stop_requested())
     {
         if (m_nChangedThreadsObject.load(std::memory_order_acquire) != 0)
         {
@@ -68,7 +112,8 @@ void CYThread::ThreadFunction()
 
         if (m_objThreadsTask.funTaskToExecute)
         {
-            ChangeThreadsExecutionProperties(m_pThreadsObject->GetExecutionProps());
+            // Use task's execution properties if available, otherwise use default
+            //ChangeThreadsExecutionProperties(m_objThreadsTask.pExecutionProps);
             m_objThreadsTask.funTaskToExecute(m_objThreadsTask.pArgList, m_objThreadsTask.bDelete);
             SetThreadAvail(CYThreadStatus::STATUS_THREAD_PURGING);
             m_objThreadsTask = { nullptr };
@@ -78,66 +123,17 @@ void CYThread::ThreadFunction()
             std::unique_lock<std::mutex> lock(m_objMutex);
             m_bSuspended.store(true, std::memory_order_release);
             m_objCondVar.wait(lock, [this] {
-                return !m_bSuspended.load(std::memory_order_acquire);
+                return !m_bSuspended.load(std::memory_order_acquire) || m_ptrThread->get_stop_token().stop_requested();
                 });
         }
     }
-}
-
-void CYThread::ChangeThreadProperties(const CYThreadTask& objAttributes)
-{
-    // Implementation depends on what properties need to be changed
-    // Now handled through thread-local storage or execution context
-}
-
-void CYThread::ChangeThreadPropertiesandResume(const CYThreadTask& objAttributes)
-{
-    m_nChangedThreadsTask.fetch_add(1, std::memory_order_release);
-    //m_objThreadsTask = objAttributes;
-    m_objNextThreadsTask = objAttributes;
-    SetThreadAvail(CYThreadStatus::STATUS_THREAD_EXECUTING);
-    ResumeThread();
-}
-
-void CYThread::ChangeThreadPropertiesandResume(ICYIThreadableObject* pAttributes)
-{
-    m_nChangedThreadsObject.fetch_add(1, std::memory_order_release);
-    m_pNextThreadsObject = pAttributes;
-    SetThreadAvail(CYThreadStatus::STATUS_THREAD_EXECUTING);
-    ResumeThread();
-}
-
-uint32_t CYThread::ExecuteThread() noexcept
-{
-    while (!m_ptrThread->get_stop_token().stop_requested())
-    {
-        if (m_nChangedThreadsObject.load() != 0)
-        {
-            m_pThreadsObject = m_pNextThreadsObject;
-            m_nChangedThreadsObject.fetch_sub(1);
-            m_pNextThreadsObject = nullptr;
-        }
-
-        if (m_pThreadsObject)
-        {
-            //Alter the threads execution properties
-            ChangeThreadsExecutionProperties(m_pThreadsObject->GetExecutionProps());
-            //Execute the associated objTask
-            m_pThreadsObject->TaskToExecute();
-            SetThreadAvail(CYThreadStatus::STATUS_THREAD_PURGING);
-            m_pThreadsObject = nullptr;
-        }
-
-        {
-            std::unique_lock<std::mutex> lock(m_objMutex);
-            m_bSuspended.store(true);
-            m_objCondVar.wait(lock, [this] { return !m_bSuspended.load(); });
-        }
-    }
-
     return 0;
 }
 
+/**
+ * Allows the thread to execute (run).
+ * @note This method is called by the thread pool, not by the user.
+ */
 void CYThread::ResumeThread()
 {
     {
@@ -147,20 +143,33 @@ void CYThread::ResumeThread()
     m_objCondVar.notify_one();
 }
 
+/**
+ * Destroy a thread, permanently.
+ * @note This method is called by the thread pool, not by the user.
+ */
 void CYThread::TerminateThread()
 {
     if (m_ptrThread && m_ptrThread->joinable())
     {
         m_ptrThread->request_stop();
+        m_objCondVar.notify_one();
         m_ptrThread->join();
     }
 }
 
+/**
+ * Suspend a thread from executing.
+ * @note This method is called by the thread pool, not by the user.
+ */
 void CYThread::SuspendThread()
 {
     m_bSuspended.store(true, std::memory_order_release);
 }
 
+/**
+ * Alter the threads execution properties.
+ * @param objExecutionProps - The execution properties of the thread to be changed.
+ */
 void CYThread::ChangeThreadsExecutionProperties(CYThreadExecutionProps* pAttributes)
 {
     if (!m_ptrThread) return;
@@ -181,7 +190,9 @@ void CYThread::ChangeThreadsExecutionProperties(CYThreadExecutionProps* pAttribu
                 CPU_SET(i, &cpuset);
             }
         }
+    #if !defined(__ANDROID__)
         pthread_setaffinity_np(handle, sizeof(cpu_set_t), &cpuset);
+    #endif
 #endif
     }
 
@@ -232,8 +243,11 @@ void CYThread::ChangeThreadsExecutionProperties(CYThreadExecutionProps* pAttribu
 #endif
 }
 
+/**
+ * Wait for a thread to complete its execution.
+ * @return The return value of the thread function.
+ */
 #undef max
-
 uint32_t CYThread::WaitForSingleObject(std::chrono::milliseconds timeout)
 {
     if (!m_ptrThread) return 0;
@@ -252,7 +266,7 @@ uint32_t CYThread::WaitForSingleObject(std::chrono::milliseconds timeout)
             std::future<void> future = objPromise.get_future();
 
             // Create a temporary thread to wait for the main thread
-            std::jthread waitThread([this, &objPromise, timeout]() {
+            CYJThread waitThread([this, &objPromise, timeout]() {
                 if (m_ptrThread->joinable())
                 {
                     m_ptrThread->join();

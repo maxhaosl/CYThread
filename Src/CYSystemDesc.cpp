@@ -72,10 +72,12 @@ int CYSystemDescription::GetHyperThreadAvailability() const noexcept
         }
     }
     return 0;
-#elif defined(__linux__)
+#elif defined(__linux__) && CYTHREAD_HAS_LINUX_CPUID
     unsigned int eax = 0, ebx = 0, ecx = 0, edx = 0;
     __get_cpuid(1, &eax, &ebx, &ecx, &edx);
     return (edx & (1 << 28)) ? 1 : 0;
+#else
+    return 0;
 #endif
 }
 

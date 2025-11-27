@@ -40,28 +40,6 @@
   * LICENSE:  Expat/MIT License, See Copyright Notice at the begin of this file.
   */
 
-#ifndef __CY_THREAD_FACTORY_HPP__
-#define __CY_THREAD_FACTORY_HPP__
-
-#include "CYThread/ICYThread.hpp"
-
-CYTHRAD_NAMESPACE_BEGIN
-
-class CYTHREAD_API CYThreadFactory
-{
-public:
-    CYThreadFactory();
-    virtual ~CYThreadFactory();
-
-public:
-    ICYThreadPool* CreateThreadPool();
-    void ReleaseThreadPool(ICYThreadPool* pThreadPool);
-};
-
-CYTHRAD_NAMESPACE_END
-
-#endif // __CY_THREAD_FACTORY_HPP__
-
 #ifndef __CY_THREAD_PROPERTIES_HPP__
 #define __CY_THREAD_PROPERTIES_HPP__
 
@@ -80,16 +58,33 @@ public:
     CYThreadProperties();
 
 public:
-    //Function member to set the stack size of a particular thread
+    /**
+     * Function member to set the stack size of a particular thread.
+     * @param stackSize: the stack size of a particular thread.
+     * @return void
+     */
     void SetStackSize(int stackSize);
-    //Function member to populate the threads properties
+
+    /**
+     * Function member to populate the threads properties.
+     * @param platformId: the platform id of the current system.
+     * @return void
+     */
     void CreateProperties(const CYPlatformId& platformId);
 public:
-    //Stack size for a particular thread
+    /**
+     * Stack size for a particular thread.
+     */
     uint32_t m_nStackSize;
-    //A particular threads handle
+
+    /**
+     * A particular threads handle.
+     */
     void* m_pThreadHandle = nullptr;
-    //A particular threads id
+
+    /**
+     * A particular threads id.
+     */
     uint32_t m_nThreadId;
 };
 
